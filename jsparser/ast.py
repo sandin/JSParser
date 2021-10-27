@@ -1,3 +1,6 @@
+from typing import List
+
+
 class ExprAST(object):
     pass
 
@@ -45,7 +48,7 @@ class ReturnExprAST(ExprAST):
 
 
 class CallExprAST(ExprAST):
-    def __init__(self, callee: str, args: list):
+    def __init__(self, callee: str, args: List[ExprAST]):
         self.callee = callee
         self.args = args
 
@@ -59,7 +62,7 @@ class CallExprAST(ExprAST):
 
 
 class PrototypeAST(ExprAST):
-    def __init__(self, name: str, args: list):
+    def __init__(self, name: str, args: List[str]):
         self.name = name
         self.args = args
 
