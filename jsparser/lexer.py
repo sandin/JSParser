@@ -42,7 +42,7 @@ class StringBuffer(object):
             if not peek:
                 self._index += 1
             return c
-        return None # EOF
+        return None  # EOF
 
     def eof(self):
         return self._index == self._length - 1
@@ -54,7 +54,7 @@ class StringBuffer(object):
             c = self._value[start_index]
             start_index -= 1
         if start_index > 0:
-            start_index += 1 # skip the nl
+            start_index += 1  # skip the nl
         end_index = self._index
         c = self._value[end_index]
         while c != "\r" and c != "\n" and end_index < self._length:
@@ -70,10 +70,10 @@ def get_token(code: StringBuffer):
     while g_last_char and g_last_char.isspace():
         g_last_char = code.getchar()
 
-    if g_last_char is None: # EOF
+    if g_last_char is None:  # EOF
         return Token.EOF
 
-    if g_last_char.isalpha() or g_last_char == "_": # identifier: [a-zA-Z][a-zA-Z0-9]*
+    if g_last_char.isalpha() or g_last_char == "_":  # identifier: [a-zA-Z][a-zA-Z0-9]*
         g_identifier_str = g_last_char
         g_last_char = code.getchar()
         while g_last_char.isalnum() or g_last_char == "_":
@@ -83,7 +83,7 @@ def get_token(code: StringBuffer):
             return g_keywords[g_identifier_str]
         return Token.IDENTIFIER
 
-    if g_last_char.isdigit(): # Number: [0-9.]
+    if g_last_char.isdigit():  # Number: [0-9.]
         num_str = g_last_char
         g_last_char = code.getchar()
         while g_last_char.isdigit() or g_last_char == ".":
@@ -97,14 +97,14 @@ def get_token(code: StringBuffer):
         if next_char == "/": # // comment util end of line
             code.getchar() # eat '//'
             g_last_char = code.getchar()
-            while g_last_char != None and g_last_char != "\n" and g_last_char != "\r":
+            while g_last_char and g_last_char != "\n" and g_last_char != "\r":
                 g_last_char = code.getchar()
 
-            if g_last_char != None:
+            if g_last_char:
                 return get_token(code)
 
     if g_last_char == "\r" or g_last_char == "\n" or g_last_char == ";":
-        g_last_char = code.getchar() # eat nl
+        g_last_char = code.getchar()  # eat nl
         while g_last_char == "\r" or g_last_char == "\n" or g_last_char == ";":
             g_last_char = code.getchar()
         return Token.NEW_LINE

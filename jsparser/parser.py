@@ -58,13 +58,13 @@ def parse_identifier_expr(code, ctx) -> Optional[ast.ExprAST]:
 
 def parse_number_expr(code, ctx) -> Optional[ast.NumberExprAST]:
     number_expr = ast.NumberExprAST(lexer.g_number_val)
-    lexer.get_next_token(code) # consume the number
+    lexer.get_next_token(code)  # consume the number
     return number_expr
 
 
 def parse_paren_expr(code, ctx) -> Optional[ast.ExprAST]:
     print("parse_paren_expr")
-    lexer.get_next_token(code) # eat '('
+    lexer.get_next_token(code)  # eat '('
     v: ast.ExprAST = parse_expression(code, ctx)
     if v is None:
         print("Error: expected expression after '('")
@@ -139,7 +139,7 @@ def parse_bin_op_rhs(code, ctx, expr_prec: int, lhs: ast.ExprAST) -> Optional[as
             return lhs
 
         bin_op = lexer.g_cur_token
-        lexer.get_next_token(code) # eat bin_op
+        lexer.get_next_token(code)  # eat bin_op
 
         rhs: ast.ExprAST = parse_primary(code, ctx)
         if rhs is None:
@@ -162,9 +162,9 @@ def parse_expression(code, ctx) -> Optional[ast.ExprAST]:
         print("Error: expected a expression on left hand side")
         return None
     rhs = parse_bin_op_rhs(code, ctx, 0, lhs)
-    if rhs is None: # e.g.: a()
+    if rhs is None:  # e.g.: a()
         return lhs
-    return rhs # e.g.: a * 2
+    return rhs  # e.g.: a * 2
 
 
 def parse_if_expr(code, ctx) -> Optional[ast.ExprAST]:
@@ -187,7 +187,7 @@ def parse_if_expr(code, ctx) -> Optional[ast.ExprAST]:
     lexer.get_next_token(code)  # eat `)`
 
     if lexer.g_cur_token == "{":
-        lexer.get_next_token(code) # eat `{` in `if (cond) {`
+        lexer.get_next_token(code)  # eat `{` in `if (cond) {`
 
     then_expr: ast.ExprAST = parse_expression(code, ctx)
     if then_expr is None:
@@ -195,10 +195,10 @@ def parse_if_expr(code, ctx) -> Optional[ast.ExprAST]:
         return None
 
     if lexer.g_cur_token == "}":
-        lexer.get_next_token(code) # eat `}` in `} else`
+        lexer.get_next_token(code)  # eat `}` in `} else`
 
     if lexer.g_cur_token == lexer.Token.ELSE:
-        lexer.get_next_token(code) # eat `else`
+        lexer.get_next_token(code)  # eat `else`
         else_expr: ast.ExprAST = parse_expression(code, ctx)
         if else_expr is None:
             print("Error: expected else expression after 'if'")
@@ -215,7 +215,7 @@ def parse_prototype(code, ctx) -> Optional[ast.PrototypeAST]:
         return None
 
     func_name = lexer.g_identifier_str
-    lexer.get_next_token(code) # eat func_name
+    lexer.get_next_token(code)  # eat func_name
 
     if lexer.g_cur_token != "(":
         print("Error: expected '(' in prototype")
@@ -232,12 +232,12 @@ def parse_prototype(code, ctx) -> Optional[ast.PrototypeAST]:
         print("Error: expected ')' in prototype")
         return None
 
-    lexer.get_next_token(code) # eat ")"
+    lexer.get_next_token(code)  # eat ")"
     return ast.PrototypeAST(name=func_name, args=args)
 
 
 def parse_function(code, ctx) -> Optional[ast.FunctionAST]:
-    lexer.get_next_token(code) # eat `function`
+    lexer.get_next_token(code)  # eat `function`
     proto: ast.PrototypeAST = parse_prototype(code, ctx)
     print("Parsed function prototype", proto)
     if proto is None:
@@ -245,14 +245,14 @@ def parse_function(code, ctx) -> Optional[ast.FunctionAST]:
 
     if lexer.g_cur_token != "{":
         print("Error: expected '{' in function, got: %s" % lexer.g_last_char)
-    lexer.get_next_token(code) # eat '{'
+    lexer.get_next_token(code)  # eat '{'
 
     body: ast.ExprAST = parse_expression(code, ctx)
     if body is not None:
         lexer.get_next_token(code)
         if lexer.g_cur_token != "}":
             print("Error: expected '}' in function, got: %s" % lexer.g_last_char)
-        lexer.get_next_token(code) # eat '}'
+        lexer.get_next_token(code)  # eat '}'
         return ast.FunctionAST(proto=proto, body=body)
     return None
 
