@@ -1,6 +1,6 @@
 # JSParser
 
-Javascript Parser.
+JSParser is a Javascript AST parser written in python without any dependencies. It can be used to translate from JavaScript to Python code, or execute Javascript code directly from python.
 
 
 ## Install
