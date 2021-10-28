@@ -18,6 +18,8 @@ class Token(enum.IntEnum):
     IF = -8
     THEN = -9
     ELSE = -10
+    #BLOCK = -11
+    #PAREN = -12
 
 
 g_keywords = {
@@ -104,10 +106,20 @@ def get_token(code: StringBuffer):
                 return get_token(code)
 
     if g_last_char == "\r" or g_last_char == "\n" or g_last_char == ";":
+        print("eat nl", g_last_char)
         g_last_char = code.getchar()  # eat nl
-        while g_last_char == "\r" or g_last_char == "\n" or g_last_char == ";":
-            g_last_char = code.getchar()
+        #while g_last_char == "\r" or g_last_char == "\n" or g_last_char == ";":
+        #    print("eat nl2", g_last_char)
+        #    g_last_char = code.getchar()
         return Token.NEW_LINE
+
+    #if g_last_char == "{":
+    #    g_last_char = code.getchar()  # eat `{`
+    #    return Token.BLOCK
+
+    #if g_last_char == "(":
+    #    g_last_char = code.getchar()  # eat `(`
+    #    return Token.PAREN
 
     this_char = g_last_char
     g_last_char = code.getchar()
@@ -117,5 +129,5 @@ def get_token(code: StringBuffer):
 def get_next_token(code: StringBuffer):
     global g_cur_token
     g_cur_token = get_token(code)
-    print("get_next_token, token=%s, str=%s, str_buffer=%s, num_buffer=%d" % (g_cur_token, g_last_char, g_identifier_str, g_number_val))
+    print("[Token] get_next_token, g_cur_token=%s, g_last_char=%s, g_identifier_str=%s, g_number_val=%d" % (g_cur_token, g_last_char, g_identifier_str, g_number_val))
     return g_cur_token

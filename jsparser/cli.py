@@ -13,7 +13,11 @@ def main():
     if not os.path.exists(args.input):
         print("input file %s is not exists!" % args.input)
 
-    ctx = { "globals": [], "functions": [] }
+    externals = {
+        "Math.max": "max",
+        "Math.min": "min",
+    }
+    ctx = { "globals": [], "functions": [], "externals": externals}
     with open(args.input, "r") as f:
         parser.parse_code_to_ast(f.read(), ctx)
 

@@ -13,6 +13,7 @@ g_bin_op_precedence = {
     "*": 40,
     "/": 40 # highest
 }
+g_block_level = 0
 
 
 def parse_identifier_expr(code, ctx) -> Optional[ast.ExprAST]:
@@ -28,6 +29,8 @@ def parse_identifier_expr(code, ctx) -> Optional[ast.ExprAST]:
         print("is_call, id_name=%s" % id_name)
         lexer.get_next_token(code) # eat identifier after  after `.`
         is_call = True
+
+    id_name = map_symbol(id_name, ctx)
 
     if is_call or lexer.g_cur_token == "(":
         # Call
@@ -54,6 +57,12 @@ def parse_identifier_expr(code, ctx) -> Optional[ast.ExprAST]:
     else:
         print("Found variable expr AST, name=%s" % id_name)
         return ast.VariableExprAST(name=id_name)
+
+
+def map_symbol(symbol_name, ctx):
+    if "externals" in ctx and symbol_name in ctx['externals']:
+        return ctx['externals'][symbol_name]
+    return symbol_name
 
 
 def parse_number_expr(code, ctx) -> Optional[ast.NumberExprAST]:
@@ -116,6 +125,8 @@ def parse_primary(code, ctx) -> Optional[ast.ExprAST]:
         return parse_if_expr(code, ctx)
     elif lexer.g_cur_token == "(":
         return parse_paren_expr(code, ctx)
+    elif lexer.g_cur_token == "{":
+        return parse_block_expr(code, ctx)
     print("Error: unknown token(`%s`) when expecting an expression" % lexer.g_cur_token)
     return None
 
@@ -157,6 +168,7 @@ def parse_bin_op_rhs(code, ctx, expr_prec: int, lhs: ast.ExprAST) -> Optional[as
 
 
 def parse_expression(code, ctx) -> Optional[ast.ExprAST]:
+    print("parse_expression")
     lhs: ast.ExprAST = parse_primary(code, ctx)
     if lhs is None:
         print("Error: expected a expression on left hand side")
@@ -186,16 +198,10 @@ def parse_if_expr(code, ctx) -> Optional[ast.ExprAST]:
         return None
     lexer.get_next_token(code)  # eat `)`
 
-    if lexer.g_cur_token == "{":
-        lexer.get_next_token(code)  # eat `{` in `if (cond) {`
-
     then_expr: ast.ExprAST = parse_expression(code, ctx)
     if then_expr is None:
         print("Error: expected then expression after 'if'")
         return None
-
-    if lexer.g_cur_token == "}":
-        lexer.get_next_token(code)  # eat `}` in `} else`
 
     if lexer.g_cur_token == lexer.Token.ELSE:
         lexer.get_next_token(code)  # eat `else`
@@ -236,6 +242,28 @@ def parse_prototype(code, ctx) -> Optional[ast.PrototypeAST]:
     return ast.PrototypeAST(name=func_name, args=args)
 
 
+def parse_block_expr(code, ctx) -> Optional[ast.BlockExprAST]:
+    global g_block_level
+    print("parse_block_expr", g_block_level)
+    body_expr = []
+    lexer.get_next_token(code)  # eat '{'
+
+    g_block_level += 1
+    while lexer.g_cur_token != lexer.Token.EOF and lexer.g_cur_token != lexer.Token.FUNCTION and lexer.g_cur_token != "}":
+        expr: ast.ExprAST = parse_expression(code, ctx)
+        if expr is None:
+            print("Error: expected expression in block")
+            return None
+        print("\tappend block expr", expr, g_block_level)
+        body_expr.append(expr)
+        lexer.get_next_token(code)
+
+    print("/parse_block_expr")
+    block = ast.BlockExprAST(g_block_level, body_expr=body_expr)
+    g_block_level -=1
+    return block
+
+
 def parse_function(code, ctx) -> Optional[ast.FunctionAST]:
     lexer.get_next_token(code)  # eat `function`
     proto: ast.PrototypeAST = parse_prototype(code, ctx)
@@ -245,16 +273,14 @@ def parse_function(code, ctx) -> Optional[ast.FunctionAST]:
 
     if lexer.g_cur_token != "{":
         print("Error: expected '{' in function, got: %s" % lexer.g_last_char)
-    lexer.get_next_token(code)  # eat '{'
 
-    body: ast.ExprAST = parse_expression(code, ctx)
+    body: ast.ExprAST = parse_block_expr(code, ctx)
     if body is not None:
-        lexer.get_next_token(code)
-        if lexer.g_cur_token != "}":
-            print("Error: expected '}' in function, got: %s" % lexer.g_last_char)
-        lexer.get_next_token(code)  # eat '}'
+        if lexer.g_cur_token != lexer.Token.FUNCTION:  # in case missing ";" end of line
+            lexer.get_next_token(code)
         return ast.FunctionAST(proto=proto, body=body)
-    return None
+    else:
+        return None
 
 
 def parse_top_level_expr(code, ctx) -> Optional[ast.ExprAST]:
@@ -279,7 +305,7 @@ def handle_function(code, ctx):
 
 
 def handle_top_level_expression(code, ctx):
-    print("\nhandle_top_level_expression")
+    print("\nhandle_top_level_expression, lexer.g_cur_token=", lexer.g_cur_token)
     top_level_expr: ast.ExprAST = parse_top_level_expr(code, ctx)
     if top_level_expr is not None:
         ctx['globals'].append(top_level_expr)
