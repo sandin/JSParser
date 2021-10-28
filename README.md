@@ -38,15 +38,15 @@ js_runtime.set("bar", 20)
 
 # eval javascript code
 js_runtime.eval("""
-var foo = 1.0;
+    var foo = 1.0;
 
-function get_bar() {
-    return bar;   // variable defined in python
-}
+    function get_bar() {
+        return bar;   // variable defined in python
+    }
 
-function add(a, b) {
-    return a + b;
-}
+    function add(a, b) {
+        return a + b;
+    }
 """)
 
  # invoke function defined in javascript
