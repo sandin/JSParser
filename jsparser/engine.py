@@ -7,7 +7,11 @@ class JSEngine(object):
 
     def __init__(self, g = {}):
         self._g = g
-        self._ctx = {"globals": [], "functions": []}
+        externals = {
+            "Math.max": "max",
+            "Math.min": "min",
+        }
+        self._ctx = {"globals": [], "functions": [], "externals": externals}
 
     def eval(self, js_code):
         parser.parse_code_to_ast(js_code, self._ctx)
