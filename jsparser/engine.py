@@ -17,5 +17,8 @@ class JSEngine(object):
     def set(self, key, val):
         self._g[key] = val
 
+    def set_all(self, values):
+        self._g = { **self._g, **values }
+
     def get(self, key):
         return self._g[key] if key in self._g else None
