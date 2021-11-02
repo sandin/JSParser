@@ -16,6 +16,12 @@ g_bin_op_precedence = {
 g_block_level = 0
 
 
+def reset():
+    global g_top_level_function_proto, g_block_level
+    g_top_level_function_proto = None
+    g_block_level = 0
+
+
 def parse_identifier_expr(code, ctx) -> Optional[ast.ExprAST]:
     print("parse_identifier_expr")
     id_name = lexer.g_identifier_str
@@ -315,7 +321,6 @@ def handle_top_level_expression(code, ctx):
 
 
 def parse_code_to_ast(code, ctx):
-    global g_cur_token
     code = lexer.StringBuffer(code)
     lexer.get_next_token(code)
     while True:
@@ -327,4 +332,6 @@ def parse_code_to_ast(code, ctx):
             handle_function(code, ctx)
         else:
             handle_top_level_expression(code, ctx)
+    reset()
+    lexer.reset()
     return ctx

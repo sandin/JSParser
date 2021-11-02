@@ -6,6 +6,14 @@ g_number_val: float = 0
 g_cur_token = None
 
 
+def reset():
+    global g_last_char, g_identifier_str, g_number_val, g_cur_token
+    g_last_char: str = ' '
+    g_identifier_str: str = None
+    g_number_val: float = 0
+    g_cur_token = None
+
+
 class Token(enum.IntEnum):
     EOF = -1
     IDENTIFIER = -2
